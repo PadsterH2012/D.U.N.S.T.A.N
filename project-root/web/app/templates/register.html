@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Login</title>
+    <title>Register</title>
   </head>
   <body>
     <div>
-      <h2>Login</h2>
+      <h2>Register</h2>
       <form method="POST" action="">
         {{ form.hidden_tag() }}
         <div>
@@ -15,6 +15,9 @@
         </div>
         <div>
           {{ form.password.label }} {{ form.password() }}
+        </div>
+        <div>
+          {{ form.confirm_password.label }} {{ form.confirm_password() }}
         </div>
         <div>
           {{ form.submit() }}
