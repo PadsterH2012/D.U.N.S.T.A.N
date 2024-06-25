@@ -1,5 +1,9 @@
 from extractor.rule_parser import RuleParser
 
-if __name__ == "__main__":
+def process_uploaded_file(file_path):
     rule_parser = RuleParser()
-    print(rule_parser.parse_rules())
+    return rule_parser.parse_rules(file_path)
+
+if __name__ == "__main__":
+    pdf_path = "/app/uploads/your_uploaded_file.pdf"  # This is just an example
+    print(process_uploaded_file(pdf_path))

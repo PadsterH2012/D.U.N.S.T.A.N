@@ -1,1 +1,1 @@
-# Add requirements for rule extraction here
+PyPDF2

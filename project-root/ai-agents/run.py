@@ -4,5 +4,6 @@ from agents.player_interactor import PlayerInteractor
 if __name__ == "__main__":
     storyteller = StoryTeller()
     player_interactor = PlayerInteractor()
-    print(storyteller.tell_story())
-    print(player_interactor.interact())
+    scene = "a dark forest"  # Provide a sample scene
+    print(storyteller.tell_story(scene))
+    print(player_interactor.interact("explore the area"))
