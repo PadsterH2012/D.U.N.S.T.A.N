@@ -6,19 +6,25 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/gamedb
 
   db:
-    image: postgres:13
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     environment:
       POSTGRES_DB: gamedb
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d gamedb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-volumes:
-  db_data:
+# Comment out persistent volume temporarily
+# volumes:
+#  db_data:

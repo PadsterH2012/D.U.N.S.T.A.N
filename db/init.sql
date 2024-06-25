@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS players (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(60) NOT NULL
+    password VARCHAR(128) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS games (
