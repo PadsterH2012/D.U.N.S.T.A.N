@@ -1,8 +1,10 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, send_file
 from app import app, db, bcrypt
-from app.forms import RegistrationForm, LoginForm, GameForm
-from app.models import Player, Game, PlayerGame
+from app.forms import RegistrationForm, LoginForm, GameForm, SettingForm, BackupForm
+from app.models import Player, Game, PlayerGame, Setting
 from flask_login import login_user, current_user, logout_user, login_required
+import json
+import io
 
 @app.route('/')
 def index():
@@ -74,3 +76,62 @@ def join_game(game_id):
 @login_required
 def welcome():
     return render_template('welcome.html')
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    form = SettingForm()
+    backup_form = BackupForm()
+
+    if form.validate_on_submit():
+        ollama_url = Setting.query.filter_by(key='ollama_url').first()
+        model = Setting.query.filter_by(key='model').first()
+
+        if not ollama_url:
+            ollama_url = Setting(key='ollama_url', value=form.ollama_url.data)
+        else:
+            ollama_url.value = form.ollama_url.data
+
+        if not model:
+            model = Setting(key='model', value=form.model.data)
+        else:
+            model.value = form.model.data
+
+        db.session.add(ollama_url)
+        db.session.add(model)
+        db.session.commit()
+        flash('Settings have been saved!', 'success')
+        return redirect(url_for('settings'))
+
+    elif backup_form.submit_backup.data:
+        settings = Setting.query.all()
+        settings_data = {setting.key: setting.value for setting in settings}
+        buffer = io.StringIO()
+        json.dump(settings_data, buffer)
+        buffer.seek(0)
+        return send_file(io.BytesIO(buffer.getvalue().encode()), mimetype='application/json', as_attachment=True, attachment_filename='settings_backup.json')
+
+    elif backup_form.submit_restore.data:
+        file = request.files['file']
+        if file:
+            settings_data = json.load(file)
+            for key, value in settings_data.items():
+                setting = Setting.query.filter_by(key=key).first()
+                if not setting:
+                    setting = Setting(key=key, value=value)
+                else:
+                    setting.value = value
+                db.session.add(setting)
+            db.session.commit()
+            flash('Settings have been restored!', 'success')
+            return redirect(url_for('settings'))
+
+    ollama_url = Setting.query.filter_by(key='ollama_url').first()
+    model = Setting.query.filter_by(key='model').first()
+
+    if ollama_url:
+        form.ollama_url.data = ollama_url.value
+    if model:
+        form.model.data = model.value
+
+    return render_template('settings.html', form=form, backup_form=backup_form)
