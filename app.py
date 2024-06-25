@@ -1,29 +1,17 @@
-from flask import Flask, render_template, request, jsonify
-from werkzeug.utils import secure_filename
-import os
-from dotenv import load_dotenv
-from pdf_processor import process_pdf
-
-load_dotenv()
+from flask import Flask, render_template
+from database.models import db, Player
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-@app.route('/', methods=['GET', 'POST'])
+# Configure the PostgreSQL database URI. This format is 'postgresql://<user>:<password>@<host>/<dbname>'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db/mydb'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # To suppress warning messages
+
+# Initialize the SQLAlchemy object with the Flask app context
+db.init_app(app)
+
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'})
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'})
-        if file and file.filename.endswith('.pdf'):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            results = process_pdf(filepath)
-            return render_template('results.html', results=results)
     return render_template('index.html')
 
 if __name__ == '__main__':

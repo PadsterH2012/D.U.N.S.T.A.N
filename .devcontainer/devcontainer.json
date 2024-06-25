@@ -1,6 +1,6 @@
 {
     "name": "PDF Rule Extractor",
-    "dockerFile": "../Dockerfile",
+    "dockerFile": "Dockerfile",
     "appPort": [5000],
     "extensions": [
         "ms-python.python"
