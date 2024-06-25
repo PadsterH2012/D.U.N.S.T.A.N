@@ -11,13 +11,13 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('welcome'))
     form = LoginForm()
     if form.validate_on_submit():
         player = Player.query.filter_by(username=form.username.data).first()
         if player and bcrypt.check_password_hash(player.password, form.password.data):
             login_user(player)
-            return redirect(url_for('index'))
+            return redirect(url_for('welcome'))
         else:
             flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', form=form)
@@ -25,7 +25,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('welcome'))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -69,3 +69,8 @@ def join_game(game_id):
         db.session.commit()
         flash('You have joined the game!', 'success')
     return redirect(url_for('games'))
+
+@app.route('/welcome')
+@login_required
+def welcome():
+    return render_template('welcome.html')
