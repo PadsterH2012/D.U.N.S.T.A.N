@@ -1,0 +1,11 @@
+{
+    "name": "PDF Rule Extractor",
+    "dockerFile": "../Dockerfile",
+    "appPort": [5000],
+    "extensions": [
+        "ms-python.python"
+    ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    }
+}
