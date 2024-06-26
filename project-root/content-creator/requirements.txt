@@ -1,0 +1,10 @@
+spacy
+PyMuPDF
+Flask
+PyPDF2
+requests
+SQLAlchemy
+psycopg2-binary
+gunicorn
+
+
