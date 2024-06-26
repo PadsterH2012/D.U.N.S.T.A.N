@@ -20,11 +20,11 @@ class Character(Base):
     genre = Column(String, index=True)
 
 class Setting(Base):
-    __tablename__ = "settings"
+    __tablename__ = "setting"  # Ensure the table name matches the database
 
     id = Column(Integer, primary_key=True, index=True)
-    key = Column(String, unique=True, index=True, nullable=False)
-    value = Column(String, nullable=False)
+    key = Column(String, index=True, unique=True)
+    value = Column(String)
 
 # Database URL for PostgreSQL
 DATABASE_URL = "postgresql://user:password@db:5432/gamedb"

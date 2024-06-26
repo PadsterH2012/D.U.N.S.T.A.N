@@ -20,7 +20,7 @@ class GameForm(FlaskForm):
 
 class SettingForm(FlaskForm):
     ollama_url = StringField('Ollama URL', validators=[DataRequired(), Length(max=200)])
-    model = StringField('Model', validators=[DataRequired(), Length(max=200)])
+    ollama_model = StringField('Ollama_Model', validators=[DataRequired(), Length(max=200)])
     submit = SubmitField('Save Settings')
 
 class BackupForm(FlaskForm):

@@ -85,20 +85,20 @@ def settings():
 
     if form.validate_on_submit():
         ollama_url = Setting.query.filter_by(key='ollama_url').first()
-        model = Setting.query.filter_by(key='model').first()
+        ollama_model = Setting.query.filter_by(key='ollama_model').first()
 
         if not ollama_url:
             ollama_url = Setting(key='ollama_url', value=form.ollama_url.data)
         else:
             ollama_url.value = form.ollama_url.data
 
-        if not model:
-            model = Setting(key='model', value=form.model.data)
+        if not ollama_model:
+            ollama_model = Setting(key='ollama_model', value=form.ollama_model.data)
         else:
-            model.value = form.model.data
+            ollama_model.value = form.ollama_model.data
 
         db.session.add(ollama_url)
-        db.session.add(model)
+        db.session.add(ollama_model)
         db.session.commit()
         flash('Settings have been saved!', 'success')
         return redirect(url_for('settings'))
@@ -126,12 +126,13 @@ def settings():
             flash('Settings have been restored!', 'success')
             return redirect(url_for('settings'))
 
-    ollama_url = Setting.query.filter_by(key='ollama_url').first()
-    model = Setting.query.filter_by(key='model').first()
+    if request.method == 'GET':
+        ollama_url = Setting.query.filter_by(key='ollama_url').first()
+        ollama_model = Setting.query.filter_by(key='ollama_model').first()
 
-    if ollama_url:
-        form.ollama_url.data = ollama_url.value
-    if model:
-        form.model.data = model.value
+        if ollama_url:
+            form.ollama_url.data = ollama_url.value
+        if ollama_model:
+            form.ollama_model.data = ollama_model.value
 
     return render_template('settings.html', form=form, backup_form=backup_form)
