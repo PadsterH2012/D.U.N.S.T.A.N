@@ -1,12 +1,13 @@
+from sqlalchemy.orm import Session
 import fitz  # PyMuPDF
 import spacy
-import random  # Add this line to import the random module
-from sqlalchemy.orm import Session  # Add this line to import the Session class
-from .settings import get_ollama_settings
+import random
 from collections import Counter
-from .models import SessionLocal, Character
 import logging
 import requests
+
+from .settings import get_setting, get_ollama_settings  # Correctly import get_setting
+from .models import SessionLocal, Character
 
 logger = logging.getLogger('app')
 

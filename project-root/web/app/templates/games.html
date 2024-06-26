@@ -30,7 +30,7 @@
             <div>
               <strong>{{ game.name }}</strong>: {{ game.description }}
             </div>
-            <a href="{{ url_for('join_game', game_id=game.id) }}" class="btn btn-success">Join</a>
+            <a href="{{ url_for('main.join_game', game_id=game.id) }}" class="btn btn-success">Join</a>
           </li>
         {% endfor %}
       </ul>

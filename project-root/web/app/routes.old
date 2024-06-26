@@ -1,7 +1,7 @@
-from flask import render_template, url_for, flash, redirect, request, send_file
+from flask import render_template, url_for, flash, redirect, request, send_file, jsonify
 from app import app, db, bcrypt
-from app.forms import RegistrationForm, LoginForm, GameForm, SettingForm, BackupForm
-from app.models import Player, Game, PlayerGame, Setting
+from app.forms import RegistrationForm, LoginForm, GameForm, SettingForm, BackupForm, CharacterForm, QuestForm
+from app.models import Player, Game, PlayerGame, Setting, Character, Quest
 from flask_login import login_user, current_user, logout_user, login_required
 import json
 import io
@@ -126,13 +126,96 @@ def settings():
             flash('Settings have been restored!', 'success')
             return redirect(url_for('settings'))
 
-    if request.method == 'GET':
-        ollama_url = Setting.query.filter_by(key='ollama_url').first()
-        ollama_model = Setting.query.filter_by(key='ollama_model').first()
+    ollama_url = Setting.query.filter_by(key='ollama_url').first()
+    ollama_model = Setting.query.filter_by(key='ollama_model').first()
 
-        if ollama_url:
-            form.ollama_url.data = ollama_url.value
-        if ollama_model:
-            form.ollama_model.data = ollama_model.value
+    if ollama_url:
+        form.ollama_url.data = ollama_url.value
+    if ollama_model:
+        form.ollama_model.data = ollama_model.value
 
     return render_template('settings.html', form=form, backup_form=backup_form)
+
+@app.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file:
+            # Process PDF for characters and quests
+            pdf_content = file.read()
+            text = extract_text_from_pdf(pdf_content)
+            names = extract_names(text)
+            consolidated_names = consolidate_names(names)
+            db = SessionLocal()
+            ollama_url = get_setting('ollama_url', db)
+            ollama_model = get_setting('ollama_model', db)
+            book_details_dict = generate_book_details(text, db, ollama_url, ollama_model)
+            characters = process_character_details(consolidated_names, db, book_details_dict, ollama_url, ollama_model)
+            # Render character selection page
+            return render_template('characters.html', characters=characters)
+    return render_template('upload.html')
+
+@app.route('/characters', methods=['GET', 'POST'])
+@login_required
+def characters():
+    if request.method == 'POST':
+        selected_characters = request.form.getlist('selected_characters')
+        for char_name in selected_characters:
+            character = Character.query.filter_by(name=char_name).first()
+            if not character:
+                character = Character(name=char_name)
+                db.session.add(character)
+            else:
+                # Update character details
+                character_details = request.form[f'{char_name}_details']
+                character.update_from_dict(character_details)
+            db.session.commit()
+        flash('Characters saved successfully!', 'success')
+        return redirect(url_for('characters'))
+    characters = Character.query.all()
+    return render_template('characters.html', characters=characters)
+
+@app.route('/character/<int:character_id>', methods=['GET', 'POST'])
+@login_required
+def character_details(character_id):
+    character = Character.query.get_or_404(character_id)
+    form = CharacterForm(obj=character)
+    if form.validate_on_submit():
+        form.populate_obj(character)
+        db.session.commit()
+        flash('Character updated successfully!', 'success')
+        return redirect(url_for('character_details', character_id=character.id))
+    return render_template('character_details.html', form=form, character=character)
+
+@app.route('/quests', methods=['GET', 'POST'])
+@login_required
+def quests():
+    if request.method == 'POST':
+        selected_quests = request.form.getlist('selected_quests')
+        for quest_name in selected_quests:
+            quest = Quest.query.filter_by(name=quest_name).first()
+            if not quest:
+                quest = Quest(name=quest_name)
+                db.session.add(quest)
+            else:
+                # Update quest details
+                quest_details = request.form[f'{quest_name}_details']
+                quest.update_from_dict(quest_details)
+            db.session.commit()
+        flash('Quests saved successfully!', 'success')
+        return redirect(url_for('quests'))
+    quests = Quest.query.all()
+    return render_template('quests.html', quests=quests)
+
+@app.route('/quest/<int:quest_id>', methods=['GET', 'POST'])
+@login_required
+def quest_details(quest_id):
+    quest = Quest.query.get_or_404(quest_id)
+    form = QuestForm(obj=quest)
+    if form.validate_on_submit():
+        form.populate_obj(quest)
+        db.session.commit()
+        flash('Quest updated successfully!', 'success')
+        return redirect(url_for('quest_details', quest_id=quest.id))
+    return render_template('quest_details.html', form=form, quest=quest)

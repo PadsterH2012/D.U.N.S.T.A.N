@@ -1,3 +1,11 @@
+spacy
+PyMuPDF
+Flask
+PyPDF2
+requests
+SQLAlchemy
+psycopg2-binary
+gunicorn
 Flask==2.0.1
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==0.15.1
