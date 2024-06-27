@@ -1,28 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 
 db = SQLAlchemy()
-
-class Player(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-    games = db.relationship('PlayerGame', backref='player', lazy=True)
-
-class Game(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    players = db.relationship('PlayerGame', backref='game', lazy=True)
-
-class PlayerGame(db.Model):
-    player_id = db.Column(db.Integer, db.ForeignKey('player.id'), primary_key=True)
-    game_id = db.Column(db.Integer, db.ForeignKey('game.id'), primary_key=True)
-
-class Setting(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(50), nullable=False, unique=True)
-    value = db.Column(db.String(200), nullable=False)
 
 class Character(db.Model):
     id = db.Column(db.Integer, primary_key=True, index=True)

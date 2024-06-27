@@ -4,6 +4,9 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
+# Install curl for debugging purposes
+RUN apt-get update && apt-get install -y curl
+
 COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

@@ -1,4 +1,3 @@
-# __init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -35,6 +34,4 @@ from app.main_routes import main as main_blueprint
 app.register_blueprint(main_blueprint, url_prefix='/')
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)
