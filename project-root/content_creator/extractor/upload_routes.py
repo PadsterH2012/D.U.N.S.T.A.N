@@ -6,7 +6,7 @@ from .ai_agent_content_parser import (
     extract_text_from_pdf, extract_names, consolidate_names,
     process_character_details, generate_book_details, get_setting
 )
-from .models import SessionLocal, Character
+from models.models import Character, SessionLocal  # Ensure SessionLocal is imported
 
 upload = Blueprint('upload', __name__)
 

@@ -1,6 +1,16 @@
-from api import create_app
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-app = create_app()
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/gamedb'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# Import your models here to make sure Alembic detects them
+from models.models import Character, Quest, Setting, Player, PlayerGame, Game
 
 @app.route('/health')
 def health():

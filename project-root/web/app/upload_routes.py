@@ -1,68 +1,66 @@
-from flask import Blueprint, render_template, request, flash, jsonify
-import requests
-from .forms import UploadForm
-from .models import db, Character
+from flask import Blueprint, request, jsonify
 import os
+import tempfile
+import logging
+from content_creator.extractor.ai_agent_content_parser import (
+    extract_text_from_pdf, extract_names, consolidate_names,
+    process_character_details, generate_book_details, get_setting
+)
+from shared.models.models import Character, SessionLocal  # Adjust the import statement
 
 upload = Blueprint('upload', __name__)
 
-@upload.route('/upload', methods=['GET', 'POST'])
-def upload_page():
-    print("Inside upload_page route")
-    form = UploadForm()
-    if request.method == 'POST':
-        print("Received POST request")
-        if form.validate_on_submit():
-            print("Form validated successfully")
-            file = form.file.data
-            if file:
-                print("File received:", file.filename)
-                # Send the file to content-creator service
-                response = requests.post('http://content-creator:8001/upload/api/upload', files={'file': file})
-                if response.status_code == 200:
-                    characters = response.json().get('characters', {})
-                    print("Characters received:", characters)  # Debug print to verify received data
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-                    # Add IDs to characters if they do not exist
-                    for idx, (key, character) in enumerate(characters.items(), start=1):
-                        character['id'] = idx
+@upload.route('/api/upload', methods=['POST'])
+def upload_api():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    if file:
+        # Save the file temporarily
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, file.filename)
+        file.save(temp_path)
 
-                    return render_template('characters.html', characters=characters)
-                else:
-                    flash('File processing failed', 'danger')
-        else:
-            print("Form validation failed")
-            for field, errors in form.errors.items():
-                for error in errors:
-                    print(f"Error in {field}: {error}")
-            flash('Form validation failed', 'danger')
-    return render_template('upload.html', form=form)
+        try:
+            with open(temp_path, 'rb') as f:
+                pdf_content = f.read()
+            text = extract_text_from_pdf(pdf_content)
+            names = extract_names(text)
+            consolidated_names = consolidate_names(names)
+            db_session = SessionLocal()
+            try:
+                ollama_url = get_setting('ollama_url', db_session)
+                ollama_model = get_setting('ollama_model', db_session)
+                book_details_dict = generate_book_details(text, db_session, ollama_url, ollama_model)
+                characters = process_character_details(consolidated_names, db_session, book_details_dict, ollama_url, ollama_model)
 
-@upload.route('/api/save_characters', methods=['POST'])
-def save_characters_api():
-    data = request.json
-    character_ids = data.get('character_ids', [])
-    
-    print("Received character IDs:", character_ids)  # Debug log to verify received data
-    
-    if not character_ids or not all(character_ids):
-        print("No valid character IDs provided")  # Debug log
-        return jsonify({'error': 'No valid character IDs provided'}), 400
-    
-    try:
-        # Assuming you have a way to fetch characters by their IDs
-        characters = Character.query.filter(Character.id.in_(character_ids)).all()
-        print("Fetched characters from DB:", characters)  # Debug log to verify fetched characters
-        # Do something with characters, e.g., mark them as saved or update
-        for character in characters:
-            character.saved = True  # Example field
-            print(f"Updated character {character.id}: {character.name}")  # Debug log for each updated character
-        db.session.commit()
-        print("Commit successful")  # Debug log for successful commit
-        return jsonify({'success': True}), 200
-    except Exception as e:
-        db.session.rollback()
-        print("Error during DB transaction:", str(e))  # Debug log for errors
-        return jsonify({'error': str(e)}), 500
-    finally:
-        db.session.close()
+                # Add characters to the database
+                for char_details in characters:
+                    if isinstance(char_details, dict):
+                        character = Character()
+                        logger.info(f'Character details: {char_details}')
+                        character.update_from_dict(char_details)
+                        db_session.add(character)
+                    else:
+                        logger.error(f'Expected dictionary for character details, got {type(char_details)}')
+
+                db_session.commit()  # Commit the session to save data to the database
+                logger.info('Characters successfully added to the database.')
+                return jsonify({'characters': characters}), 200
+            except Exception as e:
+                db_session.rollback()  # Rollback in case of error
+                logger.error(f'Error during database transaction: {str(e)}')
+                return jsonify({'error': str(e)}), 500
+            finally:
+                db_session.close()  # Ensure the session is closed
+                logger.info('Database session closed.')
+        finally:
+            # Ensure the temporary file is deleted
+            os.remove(temp_path)
+            logger.info('Temporary file deleted.')
+    return jsonify({'error': 'File processing failed'}), 500
