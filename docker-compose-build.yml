@@ -1,0 +1,21 @@
+version: '3'
+services:
+  ai-agents:
+    build: ./ai-agents
+    image: your-dockerhub-username/dunstan-ai-agents:latest
+  
+  content-creator:
+    build: ./content_creator
+    image: your-dockerhub-username/dunstan-content-creator:latest
+  
+  db:
+    build: ./db
+    image: your-dockerhub-username/dunstan-db:latest
+  
+  rpg-content-api:
+    build: ./rpg-content-api
+    image: your-dockerhub-username/dunstan-rpg-content-api:latest
+  
+  web:
+    build: ./web
+    image: your-dockerhub-username/dunstan-web:latest
