@@ -7,9 +7,9 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Copy the app directory
-COPY app app
+COPY . .
 
-# Copy the run.py file
-COPY run.py run.py
+# # Copy the run.py file
+# COPY run.py run.py
 
 CMD ["python", "run.py"]
