@@ -85,6 +85,26 @@ This project aims to create an application that leverages LLMs to become a Game 
 - **Ports**: Exposes port 8000 for API access.
 - **Dependencies**: Depends on db for storing and retrieving data, and optionally on content-creator for data processing.
 
+## AI Agents
+The AI agents are responsible for various aspects of the game's logic and flow. Each agent has a specific role to ensure a seamless and immersive RPG experience.
+
+- **AI_Agent_StoryTeller**: Describes scenes and progresses the narrative.
+- **AI_Agent_PlayerInteractor**: Manages player interactions.
+- **AI_Agent_PlayerCharacter**: Manages player stats and inventory.
+- **AI_Agent_Combat**: Manages combat scenarios.
+- **AI_Agent_OverSeer**: Ensures game rules are followed.
+- **AI_Agent_CampaignManager**: Manages overarching quests and campaigns.
+- **AI_Agent_SideQuest**: Handles minor quests and encounters.
+- **AI_Agent_NPCManager**: Creates and manages dynamic NPCs.
+- **AI_Agent_Validator**: Ensures content and actions adhere to game rules.
+
+**Folder/File Locations**:
+  - `project-root/ai-agents/Dockerfile`
+  - `project-root/ai-agents/run.py`
+  - `project-root/ai-agents/agents/__init__.py`
+  - `project-root/ai-agents/agents/player_interactor.py`
+  - `project-root/ai-agents/agents/storyteller.py`
+
 ## Overall Architecture Flow
 - **Web Container**: Serves as the front-end interface for users to interact with the application. It handles file uploads and forwards them to the content-creator.
 - **Content Creator Container**: Receives the uploaded PDF files, processes them to extract relevant data, and returns this data to the web container.
