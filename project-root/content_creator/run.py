@@ -17,8 +17,6 @@ def characters():
     db = SessionLocal()
     ollama_url = get_setting('ollama_url', db)
     ollama_model = get_setting('ollama_model', db)
-
-    # Add debug statements to print the settings
     app.logger.debug(f"Ollama URL: {ollama_url}")
     app.logger.debug(f"Ollama Model: {ollama_model}")
 
@@ -56,9 +54,8 @@ def quests():
         summary = get_summary(text, db, ollama_url, ollama_model)
         return jsonify({"summary": summary})
 
-@app.route('/upload')
-def upload_page():
-    return render_template('upload.html')
+from extractor.upload_routes import upload as upload_blueprint
+app.register_blueprint(upload_blueprint, url_prefix='/upload')
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8001, debug=True)

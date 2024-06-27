@@ -5,6 +5,7 @@ WORKDIR /app
 ENV PYTHONPATH=/app
 
 COPY requirements.txt requirements.txt
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Download the spaCy language model

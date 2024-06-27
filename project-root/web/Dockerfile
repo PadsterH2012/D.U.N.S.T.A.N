@@ -5,6 +5,7 @@ WORKDIR /app
 ENV PYTHONPATH=/app:/app/content_creator:/app/content_creator/extractor
 
 COPY web/requirements.txt requirements.txt
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Download the spaCy language model
@@ -23,4 +24,4 @@ COPY web/run.py run.py
 # Print PYTHONPATH and list contents of /app directory during build
 RUN echo "PYTHONPATH is set to: $PYTHONPATH" && ls -la /app && ls -la /app/content_creator
 
-CMD PYTHONPATH=$PYTHONPATH python run.py
+CMD ["python", "run.py"]
