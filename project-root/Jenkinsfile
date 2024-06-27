@@ -10,13 +10,13 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'sudo docker-compose -f docker-compose-build.yml build'
+                sh 'sudo docker-compose -f project-root/docker-compose-build.yml build'
             }
         }
         
         stage('Test') {
             steps {
-                sh 'docker-compose -f docker-compose-build.yml run --rm web python -m pytest'
+                sh 'docker-compose -f project-root/docker-compose-build.yml run --rm web python -m pytest'
             }
         }
 
