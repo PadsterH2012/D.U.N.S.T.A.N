@@ -1,14 +1,14 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from extractor.ai_agent_content_parser import extract_text_from_pdf, extract_names, consolidate_names, process_character_details, generate_book_details, get_summary
 from extractor.models import SessionLocal
 from extractor.settings import get_setting
-from api.endpoints import api  # Import the blueprint
+from extractor.upload_routes import upload
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__, template_folder='extractor/templates')
-app.register_blueprint(api)  # Register the blueprint
+app.register_blueprint(upload, url_prefix='/upload')
 
 @app.route('/')
 def home():

@@ -12,6 +12,8 @@ services:
         condition: service_healthy
       rpg-content-api:
         condition: service_healthy
+      content-creator:
+        condition: service_healthy
     environment:
       - SQLALCHEMY_DATABASE_URI=postgresql://user:password@db:5432/gamedb
       - FLASK_ENV=development
@@ -43,8 +45,6 @@ services:
       - FLASK_ENV=development
       - FLASK_APP=run.py
     depends_on:
-      content-creator:
-        condition: service_healthy
       db:
         condition: service_healthy
     healthcheck:
