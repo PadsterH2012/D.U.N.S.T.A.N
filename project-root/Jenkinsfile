@@ -1,50 +1,53 @@
 pipeline {
     agent any
-    
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
+    }
+
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the repository
                 checkout scm
             }
         }
-        
-        stage('Build') {
+        stage('Build and Push Images') {
             steps {
-                // Navigate to the project-root directory and build the Docker images
-                dir('project-root') {
-                    sh 'sudo docker-compose -f docker-compose-build.yml build'
+                script {
+                    // Log in to Docker Hub
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+
+                    // Change to project-root directory
+                    dir('project-root') {
+                        // Build and push the Docker images using Docker Compose
+                        sh 'docker-compose -f docker-compose-build.yml build'
+                        sh 'docker-compose -f docker-compose-build.yml push'
+                    }
+
+                    // Log out from Docker Hub
+                    sh 'docker logout'
                 }
             }
         }
-        
         stage('Test') {
             steps {
-                sh 'docker-compose -f project-root/docker-compose-build.yml run --rm web python -m pytest'
+                // Example: Add your test steps here
+                echo 'Running tests...'
             }
         }
-
-        stage('Push to Docker Hub') {
+        stage('Deploy') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker-compose -f docker-compose-build.yml push
-                    '''
-                }
+                // Example: Add your deployment steps here
+                echo 'Deploying application...'
             }
         }
-        
-        // stage('Deploy to Dev Server') {
-        //     steps {
-        //         sshagent(credentials: ['dev-server-ssh']) {
-        //             sh '''
-        //                 ssh user@dev-server 'cd /path/to/app && \
-        //                 git pull && \
-        //                 docker-compose -f docker-compose-build.yml pull && \
-        //                 docker-compose -f docker-compose-build.yml up -d'
-        //             '''
-        //         }
-        //     }
-        // }
     }
+    // post {
+    //     failure {
+    //         mail to: 'you@example.com',
+    //              subject: "Failed Pipeline: ${currentBuild.fullDisplayName}",
+    //              body: "Something is wrong with ${env.BUILD_URL}"
+    //     }
+    // }
 }
