@@ -1,20 +1,20 @@
 services:
   ai-agents:
-    build: ./project-root/ai-agents
+    build: ./ai-agents
     image: your-dockerhub-username/dunstan-ai-agents:latest
   
   content-creator:
-    build: ./project-root/content_creator
+    build: ./content_creator
     image: your-dockerhub-username/dunstan-content-creator:latest
   
   db:
-    build: ./project-root/db
+    build: ./db
     image: your-dockerhub-username/dunstan-db:latest
   
   rpg-content-api:
-    build: ./project-root/rpg-content-api
+    build: ./rpg-content-api
     image: your-dockerhub-username/dunstan-rpg-content-api:latest
   
   web:
-    build: ./project-root/web
+    build: ./web
     image: your-dockerhub-username/dunstan-web:latest
